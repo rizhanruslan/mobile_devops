@@ -60,7 +60,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: my-artifact
-          path: ./your/destination/dir
+          path: ./android/build/app/outputs/flutter-apk/app-release.apk
 
       # Linking artifact to app file
       - name: Link artifact to app file
