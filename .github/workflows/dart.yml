@@ -16,6 +16,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Install flutter-cli
+      # You may pin to the exact commit or the version.
+      # uses: steebchen/flutter@55019e0f56278a7c84949e8e17c66e8f79d67290
+        uses: steebchen/flutter@v1.1.0
+        
       - uses: actions/checkout@v4
 
       # Note: This workflow uses the latest stable version of the Dart SDK.
@@ -46,11 +52,6 @@ jobs:
       # want to change this to 'flutter test'.
       - name: Run tests
         run: dart test
-
-      - name: Install flutter-cli
-      # You may pin to the exact commit or the version.
-      # uses: steebchen/flutter@55019e0f56278a7c84949e8e17c66e8f79d67290
-        uses: steebchen/flutter@v1.1.0
 
       - name: Build Artifact
       # You may pin to the exact commit or the version.
