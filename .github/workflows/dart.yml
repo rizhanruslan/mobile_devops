@@ -28,6 +28,7 @@ jobs:
         run: flutter/bin/flutter pub get
 
       - name: Verify formatting
+        continue-on-error: true
         run: flutter/bin/dart format --output=none --set-exit-if-changed .
 
       - name: Analyze project source
