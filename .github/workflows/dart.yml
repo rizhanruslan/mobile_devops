@@ -19,8 +19,8 @@ jobs:
 
       - name: Set up Flutter
         run: |
-          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.7.0-stable.tar.xz
-          tar xf flutter_linux_3.7.0-stable.tar.xz
+          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.19.6-stable.tar.xz
+          tar xf flutter_linux_3.19.6-stable.tar.xz
           echo "$PWD/flutter/bin" >> $GITHUB_PATH
           flutter/bin/flutter doctor
 
