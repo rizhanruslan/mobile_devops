@@ -14,54 +14,54 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore cached Primes
-        id: cache-primes-restore
-        uses: actions/cache@v4
+      # Caching Flutter SDK
+      - name: Restore cached Flutter SDK
+        id: cache-flutter-restore
+        uses: actions/cache@v2
         with:
-          path: |
-            path/to/dependencies
-            some/other/dependencies
-          key: ${{ runner.os }}-primes
+          path: ~/.flutter
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
 
+      # Installing system dependencies
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y wget unzip xz-utils
 
+      # Setting up Flutter SDK
       - name: Set up Flutter
+        if: steps.cache-flutter-restore.outputs.cache-hit != 'true'
         run: |
-          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.19.6-stable.tar.xz
-          tar xf flutter_linux_3.19.6-stable.tar.xz
-          echo "$PWD/flutter/bin" >> $GITHUB_PATH
-          flutter/bin/flutter doctor
+          git clone https://github.com/flutter/flutter.git -b stable --depth 1
+          export PATH="$PWD/flutter/bin:$PATH"
+          flutter doctor
 
+      # Installing Flutter dependencies
       - name: Install Flutter dependencies
         run: flutter/bin/flutter pub get
 
+      # Verifying formatting
       - name: Verify formatting
         continue-on-error: true
         run: flutter/bin/dart format --output=none --set-exit-if-changed .
 
-      # - name: Analyze project source
-      #   run: flutter/bin/flutter analyze
-
-      # - name: Run tests
-      #   run: flutter/bin/flutter test
-
+      # Building APK
       - name: Build APK
         run: flutter/bin/flutter build apk
 
-      - name: Save Primes
-        id: cache-primes-save
-        uses: actions/cache@v4
+      # Saving cache
+      - name: Save Flutter cache
+        id: cache-flutter-save
+        uses: actions/cache@v2
         with:
-          path: |
-            path/to/dependencies
-            some/other/dependencies
-          key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
+          path: ~/.flutter
+          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
 
-      - uses: actions/download-artifact@v4
+      # Downloading artifact
+      - name: Download my artifact
+        uses: actions/download-artifact@v2
         with:
           name: my-artifact
-          path: your/destination/dir
+          path: ./your/destination/dir
 
-      - name: Display structure of downloaded files
-        run: ls -R your/destination/dir
+      # Linking artifact to app file
+      - name: Link artifact to app file
+        run: ls && ln -s ./android/build/app/outputs/flutter-apk/app-release.apk
