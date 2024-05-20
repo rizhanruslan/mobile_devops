@@ -1,4 +1,4 @@
-name: Dart and Flutter CI
+name: Dart and Flutter CI with Caching and Artifacts
 
 on:
   push:
@@ -13,6 +13,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Restore cached Primes
+        id: cache-primes-restore
+        uses: actions/cache@v4
+        with:
+          path: |
+            path/to/dependencies
+            some/other/dependencies
+          key: ${{ runner.os }}-primes
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y wget unzip xz-utils
@@ -39,3 +48,20 @@ jobs:
 
       - name: Build APK
         run: flutter/bin/flutter build apk
+
+      - name: Save Primes
+        id: cache-primes-save
+        uses: actions/cache@v4
+        with:
+          path: |
+            path/to/dependencies
+            some/other/dependencies
+          key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: my-artifact
+          path: your/destination/dir
+
+      - name: Display structure of downloaded files
+        run: ls -R your/destination/dir
