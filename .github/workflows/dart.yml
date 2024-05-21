@@ -2,9 +2,9 @@ name: Dart and Flutter CI with Caching and Artifacts
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -14,64 +14,71 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Caching Flutter SDK
       - name: Restore cached Flutter SDK
         id: cache-flutter-restore
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
 
-      # Installing system dependencies
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y wget unzip xz-utils
 
-      # Setting up Flutter SDK
       - name: Set up Flutter
         if: steps.cache-flutter-restore.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/flutter/flutter.git -b stable --depth 1
-          export PATH="$PWD/flutter/bin:$PATH"
-          flutter doctor
+          echo "$PWD/flutter/bin" >> $GITHUB_PATH
+          flutter/bin/flutter doctor
+        env:
+          PATH: ${{ github.workspace }}/flutter/bin:${{ env.PATH }}
+      
+      - name: Add Flutter to PATH
+        run: echo "$PWD/flutter/bin" >> $GITHUB_PATH
 
-      # Installing Flutter dependencies
       - name: Install Flutter dependencies
-        run: flutter/bin/flutter pub get
+        run: flutter pub get
 
-      # Verifying formatting
       - name: Verify formatting
         continue-on-error: true
-        run: flutter/bin/dart format --output=none --set-exit-if-changed .
+        run: flutter format --output=none --set-exit-if-changed .
 
-      # Building APK
+      # Uncomment these steps if you have analysis or tests
+      # - name: Analyze project source
+      #   run: flutter analyze
+
+      # - name: Run tests
+      #   run: flutter test
+
       - name: Build APK
-        run: ls && flutter/bin/flutter build apk
+        run: flutter build apk
 
-      # Saving cache
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
       - name: Save Flutter cache
         id: cache-flutter-save
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
 
-      # Print directory 
-      - name: Print Directory
-        run: ls 
+  download-artifact:
+    needs: build
+    runs-on: ubuntu-latest
 
-      # Uploading artifact
-      - uses: actions/upload-artifact@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
         with:
-          name: my-artifact
+          name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      # Downloading artifact
-      - name: Download my artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: my-artifact
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-      # Linking artifact to app file
-      - name: Link artifact to app file
-        run: ls && ln -s ./android/build/app/outputs/flutter-apk/app-release.apk
+      - name: Display structure of downloaded files
+        run: ls -R build/app/outputs/flutter-apk/app-release.apk
