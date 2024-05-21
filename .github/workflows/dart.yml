@@ -54,19 +54,23 @@ jobs:
         with:
           path: ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
-      
+
+      # Print directory 
+      - name: Print Directory
+        run: ls 
+
       # Uploading artifact
       - uses: actions/upload-artifact@v4
         with:
           name: my-artifact
-          path: ./android/build/app/outputs/flutter-apk/app-release.apk
-          
+          path: build/app/outputs/flutter-apk/app-release.apk
+
       # Downloading artifact
       - name: Download my artifact
         uses: actions/download-artifact@v2
         with:
           name: my-artifact
-          path: ./android/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
       # Linking artifact to app file
       - name: Link artifact to app file
