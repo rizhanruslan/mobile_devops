@@ -14,6 +14,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y wget unzip xz-utils git
+
+      - name: Verify git installation
+        run: git --version
+
+      - name: Debug environment variables
+        run: printenv
+
+      - name: Debug PATH
+        run: echo $PATH
+
       - name: Restore cached Flutter SDK
         id: cache-flutter-restore
         uses: actions/cache@v4
@@ -21,18 +33,17 @@ jobs:
           path: ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget unzip xz-utils git
-  
       - name: Set up Flutter
         if: steps.cache-flutter-restore.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/flutter/flutter.git -b stable --depth 1
           echo "$PWD/flutter/bin" >> $GITHUB_PATH
+          echo "$PWD/flutter/bin" >> $HOME/.bashrc
+          source $HOME/.bashrc
           flutter/bin/flutter doctor
         env:
           PATH: ${{ github.workspace }}/flutter/bin:${{ env.PATH }}
-      
+
       - name: Add Flutter to PATH
         run: echo "$PWD/flutter/bin" >> $GITHUB_PATH
 
