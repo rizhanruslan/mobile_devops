@@ -19,12 +19,16 @@ jobs:
 
       - name: Verify git installation
         run: git --version
+        continue-on-error: true
 
-      - name: Debug environment variables
-        run: printenv
-
-      - name: Debug PATH
-        run: echo $PATH
+      - name: Set up Flutter
+        id: setup-flutter
+        run: |
+          wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.19.6-stable.tar.xz
+          tar xf flutter_linux_3.19.6-stable.tar.xz
+          echo "$PWD/flutter/bin" >> $GITHUB_PATH
+          export PATH="$PWD/flutter/bin:$PATH"
+          flutter/bin/flutter doctor
 
       - name: Restore cached Flutter SDK
         id: cache-flutter-restore
@@ -32,20 +36,6 @@ jobs:
         with:
           path: ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
-
-      - name: Set up Flutter
-        if: steps.cache-flutter-restore.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/flutter/flutter.git -b stable --depth 1
-          echo "$PWD/flutter/bin" >> $GITHUB_PATH
-          echo "$PWD/flutter/bin" >> $HOME/.bashrc
-          source $HOME/.bashrc
-          flutter/bin/flutter doctor
-        env:
-          PATH: ${{ github.workspace }}/flutter/bin:${{ env.PATH }}
-
-      - name: Add Flutter to PATH
-        run: echo "$PWD/flutter/bin" >> $GITHUB_PATH
 
       - name: Install Flutter dependencies
         run: flutter pub get
