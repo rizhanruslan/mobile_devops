@@ -54,7 +54,13 @@ jobs:
         with:
           path: ~/.flutter
           key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
-
+      
+      # Uploading artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: my-artifact
+          path: ./android/build/app/outputs/flutter-apk/app-release.apk
+          
       # Downloading artifact
       - name: Download my artifact
         uses: actions/download-artifact@v2
