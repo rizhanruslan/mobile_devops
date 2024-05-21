@@ -45,7 +45,7 @@ jobs:
 
       # Building APK
       - name: Build APK
-        run: flutter/bin/flutter build apk
+        run: ls && flutter/bin/flutter build apk
 
       # Saving cache
       - name: Save Flutter cache
